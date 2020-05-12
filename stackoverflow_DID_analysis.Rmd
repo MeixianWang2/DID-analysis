@@ -1,0 +1,57 @@
+---
+title: "DID analysis"
+author: "Maven"
+date: "5/12/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#attach data
+```{r}
+attach(exante_cem)
+```
+
+# install pacakages
+```{r pressure, echo=FALSE}
+install.packages("car")
+install.packages("carData")
+library("car")
+library("carData")
+```
+
+# regression analysis with log  # DID analysis
+```{r}
+tmpvar = exante_cem[exante_cem$filter == 0,] # remove the outliters
+ml1<- lm(lans_num~as.factor(treated)+ as.factor(after) + as.factor(treated):as.factor(after),data = exante_cem[exante_cem$filter == 0,])
+summary(ml1)
+
+ml2<- lm(lans_upv_rec~as.factor(treated)+ as.factor(after) + as.factor(treated):as.factor(after),data = tmpvar)
+summary(ml2)
+```
+
+# check parallel trend assumption
+```{r}
+ml2<- lm(lans_num~as.factor(treated)+ as.factor(month) + as.factor(treated):as.factor(month),data = exante_cem[exante_cem$filter == 0,],qt=0.99)
+summary(ml2)
+ml2 <- lm()
+```
+
+# install packages needed to draw the parallel trend graph
+```{r}
+install.packages("coefplot")
+library("ggplot2")
+library("coefplot")
+coefplot(ml2, predictors="as.factor(treated):as.factor(month)", horizontal=FALSE,
+         title="", ylab=" ", xlab="")
+```
+
+# check data
+```{r}
+summary(exante_cem)
+summary(exante_cem$lans_num)
+aggregate(exante_cem, by = list(treated = exante_cem$treated, after = exante_cem$after),mean)
+aggregate(exante_cem, by = list(treated = exante_cem$treated, after = exante_cem$after),median)
+```
